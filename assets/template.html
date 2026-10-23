@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Composizione</title>
+<style>
+/*MC-FONTS:BEGIN*/
+/*MC-FONTS:END*/
+
+/* Token per ruolo: colori, caratteri e misure si cambiano qui, mai sparsi nel codice.
+   Il carattere va incorporato (motion_tools.py fonts) o l'export userà un fallback. */
+:root {
+  --bg: #0e0f13;
+  --surface: #17191f;
+  --fg: #f3f1ec;
+  --muted: #8f8e98;
+  --accent: #ff6b3d;
+  --font-display: "Inter", system-ui, sans-serif;
+  --font-text: "Inter", system-ui, sans-serif;
+}
+
+#stage { background: var(--bg); color: var(--fg); font-family: var(--font-text); }
+
+/* Costruisci lo STATO FINALE con il layout (flex, grid, inset, padding), poi anima con from() verso di esso.
+   Niente transform nel CSS degli elementi animati: per centrare usa il layout. */
+
+/* SCENA DI ESEMPIO: sostituiscila */
+.scene { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; gap: 28px; padding: 0 168px; }
+.kicker { margin: 0; font-size: 26px; font-weight: 600; letter-spacing: 0.32em; text-transform: uppercase; color: var(--muted); }
+.title { margin: 0; max-width: 1240px; font-family: var(--font-display); font-size: 132px; font-weight: 700; line-height: 1.0;
+  letter-spacing: -0.035em; text-wrap: balance; }
+.title em { font-style: normal; color: var(--accent); }
+.rule { display: block; width: 520px; height: 8px; overflow: visible; }
+.rule path { fill: none; stroke: var(--accent); stroke-width: 6; stroke-linecap: round; }
+</style>
+</head>
+<body>
+<main id="stage" data-motion-stage>
+  <!-- SCENA DI ESEMPIO: sostituiscila -->
+  <section class="scene">
+    <p class="kicker">Motion craft</p>
+    <h1 class="title">Il tempo è <em>l'unica</em> fonte di verità</h1>
+    <svg class="rule" viewBox="0 0 520 8" aria-hidden="true"><path d="M4 4H516"/></svg>
+  </section>
+</main>
+
+<script>/*MC-RUNTIME:BEGIN*/
+/*MC-RUNTIME:END*/</script>
+<script>/*MC-AUDIO:BEGIN*/
+/*MC-AUDIO:END*/</script>
+<script>
+const comp = Motion.create({
+  width: 1920, height: 1080, fps: 60, duration: 5, safe: 'broadcast', /*MC-FORMAT*/
+  background: 'var(--bg)',
+  poster: 2.4,  // il fotogramma più leggibile: è quello di reduced motion e delle anteprime
+  eases: {      // la personalità del pezzo in cinque curve (vedi references/direzione.md)
+    enter: 'cubic-bezier(0.23, 1, 0.32, 1)',
+    exit: 'cubic-bezier(0.55, 0, 1, 0.45)',
+    move: 'cubic-bezier(0.77, 0, 0.175, 1)',
+  },
+  defaults: { duration: 0.8, ease: 'enter' },
+});
+
+comp.build(({ tl, split }) => {
+  // split() va chiamato qui dentro: i font sono già caricati, quindi le righe sono quelle vere
+  const title = split('.title', { type: 'lines', mask: 'lines' });
+
+  tl.scene('apertura', 0.3, (s) => {
+    s.from('.kicker', { y: 24, opacity: 0, duration: 0.6 })
+      .from(title.lines, { y: '120%', duration: 0.9, stagger: 0.09 }, '<0.15')
+      .from('.rule path', { draw: 0, duration: 0.9, ease: 'move' }, '<0.45');
+  });
+
+  // con le maschere di riga l'uscita deve superare il 100% più il margine della maschera: 120% o più
+  tl.scene('uscita', '+=1.5', (s) => {
+    s.to(title.lines, { y: '-125%', duration: 0.55, ease: 'exit', stagger: 0.05 })
+      .to(['.kicker', '.rule'], { opacity: 0, duration: 0.4, ease: 'exit' }, '<');
+  });
+});
+
+// Audio, solo se richiesto (serve `motion_tools.py init --audio` o `sync --audio`):
+// comp.audio((a) => {
+//   a.whoosh(comp.at('apertura') + 0.1, { dur: 0.7 });
+//   a.tick(comp.at('apertura') + 0.9);
+//   a.whoosh(comp.at('uscita') - 0.15, { dur: 0.55, from: 0.3, to: -0.3 });
+// });
+</script>
+</body>
+</html>
